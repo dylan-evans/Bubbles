@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="hello">Hello World, BubblesActivity!</string>
+    <string name="logo">Bubbles!</string>
+    <string name="app_name">Bubbles</string>
+    <string name="bubble_settings">Bubbles Settings</string>
+    <string name="color">Colour</string>
+    
+</resources>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    
+    <!-- Background colours -->
+    <string-array name="color_names">
+        <item >Ocean</item>
+        <item >Fanta</item>
+    </string-array>
+    <string-array name="color_values">
+        <item >"#112255"</item>
+        <item >"#df8520"</item>
+    </string-array>
+    
+    <!-- Frame rate -->
+    <string-array name="fps_names">
+        <item>100</item>
+        <item>50</item>
+        <item>25</item>
+        <item>10</item>
+        <item>5</item>
+    </string-array>
+    
+    <string-array name="bubble_count">
+        <item>64</item>
+        <item>128</item>
+        <item>256</item>
+        <item>512</item>
+    </string-array>
+    
+    <string-array name="bubble_size_names">
+        <item>Tiny</item>
+        <item>Small</item>
+        <item>Medium</item>
+        <item>Large</item>
+        <item>Huge</item>
+        <item>Gigantic</item>
+    </string-array>
+    
+    <string-array name="bubble_size">
+        <item>2</item>
+        <item>6</item>
+        <item>11</item>
+        <item>20</item>
+        <item>30</item>
+        <item>60</item>
+    </string-array>
+    
+    <!-- Generic bool -->
+    <string-array name="gen_bool">
+        <item>Enable</item>
+        <item>Disable</item>
+    </string-array>
+
+</resources>

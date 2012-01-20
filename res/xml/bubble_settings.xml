@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" 
+    android:title="Bubble Settings" android:key="bubble_settings">
+	
+	<PreferenceScreen android:key="bg"
+	    android:title="Background"
+	    android:summary="Set the background properties">
+	    <ListPreference android:key="col_select" 
+	        android:title="Choose colour"
+	        android:summary="From a list"
+	        android:entries="@array/color_names"
+	        android:entryValues="@array/color_values"
+	        android:defaultValue="Ocean"/>
+	    
+		<EditTextPreference android:key="col_enter" 
+		    android:title="Set Colour" 
+		    android:defaultValue="112255"
+			android:summary="Set the colour code"
+	    	android:dialogTitle="Background Color" 
+	    	android:persistent="true"/>
+	</PreferenceScreen>
+	
+	<PreferenceScreen
+	    android:key="sensor"
+	    android:title="Sensor"
+	    android:summary="Configure the accelerometer"
+	    >
+		<ListPreference android:key="enable_sensor"
+		    android:title="Enable Sensor"
+		    android:summary="Turn the acceleromter on or off"
+		    android:entries="@array/gen_bool"
+		    android:defaultValue="Enable"
+		    android:entryValues="@array/gen_bool"
+		    android:persistent="true"/>
+	    
+	</PreferenceScreen>
+
+	<ListPreference android:key="fps"
+	    android:title="Framerate"
+	    android:summary="Set the maximum FPS"
+	    android:entries="@array/fps_names"
+	    android:entryValues="@array/fps_names"
+	    android:defaultValue="25"
+	    />
+	<ListPreference android:key="bubble_count"
+	    android:title="Number of bubbles"
+	    android:summary="How many?"
+	    android:entries="@array/bubble_count"
+	    android:entryValues="@array/bubble_count"
+	    android:defaultValue="128"
+	    />
+	<ListPreference android:key="bubble_size"
+	    android:title="Bubble Size"
+	    android:summary="How big should the bubbles be?"
+	    android:entries="@array/bubble_size_names"
+	    android:entryValues="@array/bubble_size"
+	    android:defaultValue="11"
+	    />
+</PreferenceScreen>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wallpaper xmlns:android="http://schemas.android.com/apk/res/android" 
+    android:theme="@android:style/Theme.Light.WallpaperSettings"
+    android:thumbnail="@drawable/preview"
+    android:settingsActivity="me.dje.Bubbles.BubbleWallpaperSettings"
+/>
