@@ -24,7 +24,11 @@ import android.view.SurfaceHolder;
  */
 public class BubbleWallpaper extends WallpaperService {
 	public static final String SHARED_PREFS_NAME = "bubble_settings";
-
+	private final int DEFAULT_BUBBLES = 128;
+	private final int DEFAULT_BLUE = 0xff112255;
+	private final String TAG = "BubbleEngine";
+	
+	
 	public Engine onCreateEngine() {		
 		return new BubbleEngine();
 	}
@@ -36,65 +40,46 @@ public class BubbleWallpaper extends WallpaperService {
 	 */
 	class BubbleEngine extends Engine implements SensorEventListener, 
 			SharedPreferences.OnSharedPreferenceChangeListener {
-		private final int DEFAULT_BUBBLES = 128;
-		private final int DEFAULT_BLUE = 0xff112255;
-		//private final int DEFAULT_FANTA = 0xffdf8520;
-		private final String TAG = "BubbleEngine";
-		private boolean initial = true;
-		private boolean visible = true;
-		private boolean blue = true;
-		
-		public int width, height;
-		private int fps = 25;
-		private boolean useSensor = true;
-		private boolean hold = false;
-		private int bubbleSize = 10;
-		
+		private final Runnable drawBubbles;
 		private Bubble collection[];
 		private Handler handler = new Handler();
+		private boolean initial = true;
+		private boolean visible = true;
 		
-		private int angle = 0;
+		private int width, height, fps;
+		private boolean hold, useSensor;
+		private int bubbleSize = 10;
+		
 		private float azimuth, pitch, roll;
 		
-		private final SensorManager sensorManager;
-		private final Sensor sensor;
-		
-		private final Paint paint = new Paint();
 		private final Paint bgPaint = new Paint();
 		
 		private SharedPreferences prefs;
-		
-		private final Runnable drawBubbles = new Runnable() {
-			public void run() {
-				drawFrame(false);
-			}
-		};
-		
 		
 		/**
 		 * Create and configure a new Bubble engine.
 		 */	
 		public BubbleEngine() {
 			super();
-			Log.v(TAG, "Creating Bubble engine");
-			
-			/* */
-			sensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
-			sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
-			
+			SensorManager sensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
+			Sensor sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
 			sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
 			
 			collection = new Bubble[DEFAULT_BUBBLES];
-			paint.setColor(0xffffffff);
-			paint.setStyle(Paint.Style.FILL);
 			bgPaint.setColor(DEFAULT_BLUE);
 			bgPaint.setStyle(Paint.Style.FILL);
 			
+			this.fps = 25;
 			azimuth = pitch = roll = 0;
 			
 			prefs = getSharedPreferences(SHARED_PREFS_NAME, 0);
 			prefs.registerOnSharedPreferenceChangeListener(this);
 			this.onSharedPreferenceChanged(prefs, null);
+			drawBubbles = new Runnable() {
+				public void run() {
+					drawFrame(false);
+				}
+			};
 		}
 		
 		/**
@@ -122,7 +107,6 @@ public class BubbleWallpaper extends WallpaperService {
 							/* Create Bubble objects */
 							collection[i] = new Bubble(this);
 							collection[i].setMaxSize(bubbleSize);
-							//bgPaint.setAlpha(0xFF);
 						} else {
 							/* Move the Bubble */
 							collection[i].update(this.fps, this.roll);
@@ -139,11 +123,6 @@ public class BubbleWallpaper extends WallpaperService {
 					
 					if(initial) initial = false;
 				}
-				
-				
-				//c.drawCircle(Bubble.randRange(1, c.getWidth()), 
-						//Bubble.randRange(1, c.getHeight()), 
-						//Bubble.randRange(1, 50), paint);
 			} finally {
 				if(c != null) holder.unlockCanvasAndPost(c);
 			}
@@ -161,6 +140,8 @@ public class BubbleWallpaper extends WallpaperService {
 		
 		@Override
         public void onVisibilityChanged(boolean visible) {
+			SensorManager sensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
+			Sensor sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
 			this.visible = visible;
 			sensorManager.unregisterListener(this);
             if (visible) {
@@ -187,6 +168,7 @@ public class BubbleWallpaper extends WallpaperService {
 
         @Override
         public void onSurfaceDestroyed(SurfaceHolder holder) {
+        	SensorManager sensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
             super.onSurfaceDestroyed(holder);
             handler.removeCallbacks(drawBubbles);
             sensorManager.unregisterListener(this);
@@ -221,9 +203,9 @@ public class BubbleWallpaper extends WallpaperService {
 			}
 		}
 
-		public void onSharedPreferenceChanged(
-				SharedPreferences sharedPrefs, String key) {
-			//String col = sharedPreferences.getString("test", "blue");
+		public void onSharedPreferenceChanged(SharedPreferences sharedPrefs, String key) {
+			SensorManager sensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
+			Sensor sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
 			Log.d(TAG, "Preference key: '" + key + "'");
 			
 			if(key == null || key.compareTo("fps") == 0) {
