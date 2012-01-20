@@ -5,8 +5,8 @@ import android.graphics.Paint;
 public class Bubble {
 	private float x, y, radius, maxRadius;
 	private Paint paint;
-	private int width, height;
 	private int maxSize = 10;
+	private BubbleWallpaper.BubbleEngine engine;
 	public boolean popped;
 	
 	public static int randRange(int min, int max) {
@@ -15,10 +15,8 @@ public class Bubble {
 		return (int)val + min;
 	}
 	
-	
-	Bubble(int width, int height) {
-		this.width = width;
-		this.height = height;
+	Bubble(BubbleWallpaper.BubbleEngine engine) {
+		this.engine = engine;
 		this.popped = false;
 		
 		paint = new Paint();
@@ -35,12 +33,12 @@ public class Bubble {
 	
 	public void refresh(boolean initial) {
 		if(initial) {
-			this.y = randRange(0, this.height);
+			this.y = randRange(0, engine.getHeight());
 		} else {
 			// Start at the bottom if not initial
-			this.y = this.height + (randRange(0, 21) - 10 ); 
+			this.y = engine.getHeight() + (randRange(0, 21) - 10 ); 
 		}
-		this.x = randRange(0, this.width);
+		this.x = randRange(0, engine.getWidth());
 		this.radius = 1;
 		this.maxRadius = randRange(3, this.maxSize);
 		this.paint.setAlpha(randRange(100, 250));
@@ -65,20 +63,15 @@ public class Bubble {
 			this.y -= (speed - (speed * ( (angle > 0 ? angle : -angle) / 90) ));
 			//this.y += speed * (speed / (angle/90));
 			if(this.y + this.radius <= 0 || 
-					this.y - this.radius >= this.height || 
+					this.y - this.radius >= engine.getHeight() || 
 					this.x + this.radius <= 0 || 
-					this.x - this.radius >= this.width) {
+					this.x - this.radius >= engine.getWidth()) {
 				this.popped = true;
 			}
 		}
 	}
 	
 	/* Boring accessors */
-	
-	public void setDimension(int width, int height) {
-		this.width = width;
-		this.height = height;
-	}
 	
 	public void setPosition(float x, float y) {
 		this.x = x;

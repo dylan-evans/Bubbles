@@ -24,19 +24,8 @@ import android.view.SurfaceHolder;
  */
 public class BubbleWallpaper extends WallpaperService {
 	public static final String SHARED_PREFS_NAME = "bubble_settings";
-	
-	@Override
-    public void onCreate() {
-        super.onCreate();
-    }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-    }
-	@Override
-	public Engine onCreateEngine() {
-		
+	public Engine onCreateEngine() {		
 		return new BubbleEngine();
 	}
 	
@@ -47,15 +36,15 @@ public class BubbleWallpaper extends WallpaperService {
 	 */
 	class BubbleEngine extends Engine implements SensorEventListener, 
 			SharedPreferences.OnSharedPreferenceChangeListener {
-		private int counter = 0;
 		private final int DEFAULT_BUBBLES = 128;
 		private final int DEFAULT_BLUE = 0xff112255;
-		private final int DEFAULT_FANTA = 0xffdf8520;
+		//private final int DEFAULT_FANTA = 0xffdf8520;
 		private final String TAG = "BubbleEngine";
 		private boolean initial = true;
 		private boolean visible = true;
 		private boolean blue = true;
 		
+		public int width, height;
 		private int fps = 25;
 		private boolean useSensor = true;
 		private boolean hold = false;
@@ -116,9 +105,14 @@ public class BubbleWallpaper extends WallpaperService {
 			//Log.v(TAG, "drawFrame");
 			final SurfaceHolder holder = getSurfaceHolder();
 			Canvas c = null; 
+			
 			try {
 				c = holder.lockCanvas();
 				if(c != null) {
+					if(refresh) {
+						this.height = c.getHeight();
+						this.width = c.getWidth();
+					}
 					/* Draw the background */
 					c.drawRect(new Rect(0, 0, c.getWidth(), c.getHeight()), bgPaint);
 
@@ -126,13 +120,9 @@ public class BubbleWallpaper extends WallpaperService {
 					for(int i=0; i < collection.length; i++) {
 						if(initial) {
 							/* Create Bubble objects */
-							collection[i] = new Bubble(c.getWidth(), c.getHeight());
+							collection[i] = new Bubble(this);
 							collection[i].setMaxSize(bubbleSize);
 							//bgPaint.setAlpha(0xFF);
-						} else if(refresh) {
-							/* Update dimensions */
-							Log.d(TAG, "This: " + i);
-							collection[i].setDimension(c.getWidth(), c.getHeight());
 						} else {
 							/* Move the Bubble */
 							collection[i].update(this.fps, this.roll);
@@ -288,6 +278,14 @@ public class BubbleWallpaper extends WallpaperService {
 				}
 			}
 			drawFrame(true);
+		}
+		
+		public int getHeight() {
+			return this.height;
+		}
+		
+		public int getWidth() {
+			return this.width;
 		}
 	}
 	
