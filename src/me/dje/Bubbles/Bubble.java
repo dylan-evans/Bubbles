@@ -20,7 +20,7 @@ public class Bubble {
 		this.popped = false;
 		
 		paint = new Paint();
-		paint.setColor(0xffffffff);
+		paint.setColor(0xffff0000);
 		paint.setStyle(Paint.Style.FILL);
 		paint.setAntiAlias(true);
 		

@@ -15,6 +15,7 @@ import android.service.wallpaper.WallpaperService;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
+import android.widget.Toast;
 
 /**
  * Bubble wall paper.
@@ -43,6 +44,7 @@ public class BubbleWallpaper extends WallpaperService {
 		private final Runnable drawBubbles;
 		private Bubble collection[];
 		private Handler handler = new Handler();
+		private SensorEvent aEvent, mEvent;
 		private boolean initial = true;
 		private boolean visible = true;
 		
@@ -61,16 +63,16 @@ public class BubbleWallpaper extends WallpaperService {
 		 */	
 		public BubbleEngine() {
 			super();
-			SensorManager sensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
-			Sensor sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
-			sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
 			
+			enableSensor();
 			collection = new Bubble[DEFAULT_BUBBLES];
 			bgPaint.setColor(DEFAULT_BLUE);
 			bgPaint.setStyle(Paint.Style.FILL);
 			
 			this.fps = 25;
 			azimuth = pitch = roll = 0;
+			
+			aEvent = mEvent = null;
 			
 			prefs = getSharedPreferences(SHARED_PREFS_NAME, 0);
 			prefs.registerOnSharedPreferenceChangeListener(this);
@@ -87,7 +89,6 @@ public class BubbleWallpaper extends WallpaperService {
 		 * @param refresh Update dimensions
 		 */
 		public void drawFrame(boolean refresh) {
-			//Log.v(TAG, "drawFrame");
 			final SurfaceHolder holder = getSurfaceHolder();
 			Canvas c = null; 
 			
@@ -133,6 +134,15 @@ public class BubbleWallpaper extends WallpaperService {
             }
 		}
 		
+		public void calculateAngle() {
+			float R[] = new float[9];
+			float I[] = new float[9];
+			float gravity[] = new float[9];
+			float geomagnetic[] = new float[9];
+			SensorManager.getRotationMatrix(R, I, gravity, geomagnetic);
+			
+		}
+		
 		public void onCreate(SurfaceHolder surfaceHolder) {
 			super.onCreate(surfaceHolder);
 			setTouchEventsEnabled(false);
@@ -140,19 +150,32 @@ public class BubbleWallpaper extends WallpaperService {
 		
 		@Override
         public void onVisibilityChanged(boolean visible) {
-			SensorManager sensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
-			Sensor sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
 			this.visible = visible;
-			sensorManager.unregisterListener(this);
-            if (visible) {
+			if (visible) {
             	if(useSensor)
-            		sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
+            		enableSensor();
                 drawFrame(true);
             } else {
                 handler.removeCallbacks(drawBubbles);
-                //sensorManager.unregisterListener(this);
+                disableSensor();
             }
         }
+		
+		public void enableSensor() {
+			SensorManager sensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
+			Sensor sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
+			sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
+			/* Sensor accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+			sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+			Sensor magnetic = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+			sensorManager.registerListener(this, magnetic, SensorManager.SENSOR_DELAY_NORMAL);
+			*/
+		}
+		
+		public void disableSensor() {
+			SensorManager sensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
+			sensorManager.unregisterListener(this);
+		}
 
         @Override
         public void onSurfaceChanged(SurfaceHolder holder, int format, int width, int height) {
@@ -162,16 +185,16 @@ public class BubbleWallpaper extends WallpaperService {
 
         @Override
         public void onSurfaceCreated(SurfaceHolder holder) {
-            super.onSurfaceCreated(holder);
+            super.onSurfaceCreated(holder); 
         }
         
 
         @Override
         public void onSurfaceDestroyed(SurfaceHolder holder) {
-        	SensorManager sensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
-            super.onSurfaceDestroyed(holder);
+        	disableSensor();
+        	super.onSurfaceDestroyed(holder);
             handler.removeCallbacks(drawBubbles);
-            sensorManager.unregisterListener(this);
+            //sensorManager.unregisterListener(this);
         }
 
         @Override
@@ -185,8 +208,38 @@ public class BubbleWallpaper extends WallpaperService {
 			// TODO Auto-generated method stub
 			
 		}
-
+		
 		public void onSensorChanged(SensorEvent event) {
+			Log.d(TAG, "I got this event, yeah");
+			if(this.hold || !this.visible) return; 
+			if(event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+				aEvent = event;
+				Log.d(TAG, "I don't like to type a lot");
+				
+			} else if(event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
+				mEvent = event;
+				Log.d(TAG, "Got magnetic sensor");
+			} else if(event.sensor.getType() == Sensor.TYPE_ORIENTATION) {
+				this.azimuth = event.values[0];
+				this.pitch = event.values[1];
+				this.roll = event.values[2];
+				return;
+			} else {
+				return;
+			}
+			
+			if(aEvent != null && mEvent != null) {
+				float R[] = new float[16];
+				float I[] = new float[16];
+				SensorManager.getRotationMatrix(R, I, aEvent.values, mEvent.values);
+				float orientation[] = new float[3];
+				SensorManager.getOrientation(R, orientation);
+				this.azimuth = orientation[0];
+				this.pitch = orientation[1];
+				this.roll = orientation[2];
+				Log.d(TAG, "Sense: " + this.azimuth + " " + this.pitch + " " + this.roll);
+			}
+			
 			this.azimuth = event.values[0];
 			this.pitch = event.values[1];
 			this.roll = event.values[2];
@@ -217,9 +270,10 @@ public class BubbleWallpaper extends WallpaperService {
 				// Unregister as potential battery savior
 				sensorManager.unregisterListener(this);
 				if(sharedPrefs.getString("sensor", "Enable") == "Enable") {
-					sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
+					enableSensor();
 					this.useSensor = true;
 				} else {
+					disableSensor();
 					this.useSensor = false;	
 				}
 			}
