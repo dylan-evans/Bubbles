@@ -2,6 +2,9 @@ package me.dje.Bubbles;
 
 import android.graphics.Paint;
 
+/**
+ * The bubble class tracks the size, location and colour of a single bubble.
+ */
 public class Bubble {
 	private float x, y, radius, maxRadius;
 	private Paint paint;
@@ -15,12 +18,21 @@ public class Bubble {
 		return (int)val + min;
 	}
 	
+	/**
+	 * Create a bubble
+	 * @param engine The Wallpaper engine
+	 */
 	Bubble(BubbleWallpaper.BubbleEngine engine) {
 		this.engine = engine;
 		this.popped = false;
 		
 		paint = new Paint();
-		paint.setColor(0xffff0000);
+		paint.setColor(0xffffffff);
+		/* paint.setARGB(randRange(0, 256),
+				randRange(0, 256),
+				randRange(0, 256),
+				randRange(0, 256));
+		*/
 		paint.setStyle(Paint.Style.FILL);
 		paint.setAntiAlias(true);
 		
@@ -31,6 +43,10 @@ public class Bubble {
 		this.refresh(false);
 	}
 	
+	/**
+	 * 
+	 * @param initial
+	 */
 	public void refresh(boolean initial) {
 		if(initial) {
 			this.y = randRange(0, engine.getHeight());
@@ -45,6 +61,12 @@ public class Bubble {
 		this.popped = false;
 	}
 	
+	/**
+	 * Update the size and position of a Bubble.
+	 * 
+	 * @param fps The current FPS
+	 * @param angle The angle of the device
+	 */
 	public void update(int fps, float angle) {
 		// On fps 25 the speed is the radius
 		float speed = this.radius / ((float)fps/25); // This is the speed at normal gravity

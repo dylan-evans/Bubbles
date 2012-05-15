@@ -15,7 +15,6 @@ import android.service.wallpaper.WallpaperService;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
-import android.widget.Toast;
 
 /**
  * Bubble wall paper.
@@ -35,9 +34,7 @@ public class BubbleWallpaper extends WallpaperService {
 	}
 	
 	/**
-	 * 
-	 * @author dylane
-	 *
+	 * This is the the engine of the bubbles.
 	 */
 	class BubbleEngine extends Engine implements SensorEventListener, 
 			SharedPreferences.OnSharedPreferenceChangeListener {
@@ -52,11 +49,20 @@ public class BubbleWallpaper extends WallpaperService {
 		private boolean hold, useSensor;
 		private int bubbleSize = 10;
 		
+		private int redDir = 0;
+		private int greenDir = 0;
+		private int blueDir = 0;
+		private int redCnt = 0;
+		private int greenCnt = 0;
+		private int blueCnt = 0;
+		private int frame;
+		
 		private float azimuth, pitch, roll;
 		
 		private final Paint bgPaint = new Paint();
 		
 		private SharedPreferences prefs;
+		private boolean bgColorShift = false;
 		
 		/**
 		 * Create and configure a new Bubble engine.
@@ -65,13 +71,14 @@ public class BubbleWallpaper extends WallpaperService {
 			super();
 			
 			enableSensor();
+			
+			// These are the defaults, which are mostly duplicated in xml settings
 			collection = new Bubble[DEFAULT_BUBBLES];
 			bgPaint.setColor(DEFAULT_BLUE);
 			bgPaint.setStyle(Paint.Style.FILL);
-			
 			this.fps = 25;
-			azimuth = pitch = roll = 0;
 			
+			azimuth = pitch = roll = 0;
 			aEvent = mEvent = null;
 			
 			prefs = getSharedPreferences(SHARED_PREFS_NAME, 0);
@@ -100,6 +107,36 @@ public class BubbleWallpaper extends WallpaperService {
 						this.width = c.getWidth();
 					}
 					/* Draw the background */
+					this.frame++;
+					if(bgColorShift && this.frame == 5) {
+						this.frame = 0;
+						if(redCnt <= 0) {
+							redDir = (int)Math.round(Math.random() * 100) % 3 - 1;
+							redCnt = (int)Math.round(Math.random() * 1000) % 200;
+						}
+						if(greenCnt <= 0) {
+							greenDir = (int)Math.round(Math.random() * 100) % 3 - 1;
+							greenCnt = (int)Math.round(Math.random() * 1000) % 200;
+						}
+						if(blueCnt <= 0) {
+							blueDir = (int)Math.round(Math.random() * 100) % 3 - 1;
+							blueCnt = (int)Math.round(Math.random() * 1000) % 200;
+						}
+						int col = bgPaint.getColor();
+						int red = Color.red(col);
+						int green = Color.green(col);
+						int blue = Color.blue(col);
+						if((redDir > 0 &&  red < 255) || (redDir < 0 && red > 0))
+							red += redDir;
+						redCnt--;
+						if((greenDir > 0 && green < 255) || (greenDir < 0 && green > 0))
+							green += greenDir;
+						greenCnt--;
+						if((blueDir > 0 && blue < 255) || (blueDir < 0 && blue > 0))
+							blue += blueDir;
+						blueCnt--;
+						bgPaint.setColor(Color.argb(Color.alpha(col), red, green, blue));
+					}
 					c.drawRect(new Rect(0, 0, c.getWidth(), c.getHeight()), bgPaint);
 
 					/* Draw each Bubble */
@@ -116,15 +153,17 @@ public class BubbleWallpaper extends WallpaperService {
 						c.drawCircle((int)collection[i].getX(), (int)collection[i].getY(), 
 								(int)collection[i].getRadius(), collection[i].getPaint());
 						if(!hold && collection[i].popped) {
-							//collection[i] = new Bubble(c.getWidth(), c.getHeight());
+							// collection[i] = new Bubble(c.getWidth(), c.getHeight());
 							/* Less elegant but more efficient solution */
 							collection[i].refresh(false);
 						}
 					}
 					
+					// Remove initial flag
 					if(initial) initial = false;
 				}
 			} finally {
+				// Unlock this in case of an error
 				if(c != null) holder.unlockCanvasAndPost(c);
 			}
 			
@@ -165,11 +204,11 @@ public class BubbleWallpaper extends WallpaperService {
 			SensorManager sensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
 			Sensor sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
 			sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
-			/* Sensor accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+			Sensor accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 			sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
 			Sensor magnetic = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
 			sensorManager.registerListener(this, magnetic, SensorManager.SENSOR_DELAY_NORMAL);
-			*/
+			
 		}
 		
 		public void disableSensor() {
@@ -194,7 +233,6 @@ public class BubbleWallpaper extends WallpaperService {
         	disableSensor();
         	super.onSurfaceDestroyed(holder);
             handler.removeCallbacks(drawBubbles);
-            //sensorManager.unregisterListener(this);
         }
 
         @Override
@@ -311,6 +349,13 @@ public class BubbleWallpaper extends WallpaperService {
 					for(int i = 0; i < collection.length; i++) {
 						collection[i].setMaxSize(bubbleSize);
 					}
+				}
+			}
+			if(key == null || key.compareTo("col_shift") == 0) {
+				try {
+					this.bgColorShift = Boolean.parseBoolean(sharedPrefs.getString("col_shift", "false"));
+				} catch(Exception e) {
+					this.bgColorShift = false;
 				}
 			}
 			drawFrame(true);

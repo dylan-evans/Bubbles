@@ -6,13 +6,14 @@ import android.widget.TextView;
 import android.view.SurfaceView;
 
 public class BubblesActivity extends Activity {
-    /** Called when the activity is first created. */
+	
+	/**
+	 * 
+	 * @param savedInstanceState This is the instance state that was saved...
+	 */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //setContentView(R.layout.main);
-        //TextView tv = new TextView(this);
-        //tv.setText("Hello, World!");
         SurfaceView sv = new SurfaceView(this);
         setContentView(sv);
     }
