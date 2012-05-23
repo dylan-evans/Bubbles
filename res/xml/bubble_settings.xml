@@ -6,7 +6,7 @@
 	    android:title="Background"
 	    android:summary="Set the background properties">
 	    <ListPreference android:key="col_select" 
-	        android:title="Choose colour"
+	        android:title="Choose color"
 	        android:summary="From a list"
 	        android:entries="@array/color_names"
 	        android:entryValues="@array/color_values"
@@ -15,18 +15,18 @@
 		<EditTextPreference android:key="col_enter" 
 		    android:title="Set Colour" 
 		    android:defaultValue="112255"
-			android:summary="Set the colour code"
+			android:summary="Set the color code"
 	    	android:dialogTitle="Background Color" 
 	    	android:persistent="true"/>
 		
 	    <CheckBoxPreference android:key="col_shift"
 	    	android:title="Shift Colours"
-	    	android:summary="Shift colours randomly"
+	    	android:summary="Shift colors randomly"
 	    	android:defaultValue="false"
 	    	android:persistent="true"/>
 	</PreferenceScreen>
 	
-	<PreferenceScreen
+	<!-- <PreferenceScreen
 	    android:key="sensor"
 	    android:title="Sensor"
 	    android:summary="Configure the accelerometer"
@@ -40,7 +40,7 @@
 		    android:persistent="true"/>
 	    
 	</PreferenceScreen>
-
+	-->
 	<ListPreference android:key="fps"
 	    android:title="Framerate"
 	    android:summary="Set the maximum FPS"

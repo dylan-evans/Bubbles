@@ -353,99 +353,27 @@ public class BubbleWallpaper extends WallpaperService {
 			return prefPaint;
 		}
 	}
-
-	class SensorAgent implements SensorEventListener {
-		private boolean enabled;
-		private boolean hold;
-		//private int azimuth, pitch;
-		private int roll;
-
-		public SensorAgent() {
-			enabled = false;
-			hold = false;
-			
-		}
-
-		public void enable() {
-			SensorManager sensorManager = (SensorManager) 
-					getSystemService(Context.SENSOR_SERVICE);
-			Sensor sensor = sensorManager
-					.getDefaultSensor(Sensor.TYPE_ORIENTATION);
-			sensorManager.registerListener(this, sensor,
-					SensorManager.SENSOR_DELAY_NORMAL);
-			Sensor accelerometer = sensorManager
-					.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-			sensorManager.registerListener(this, accelerometer,
-					SensorManager.SENSOR_DELAY_NORMAL);
-			Sensor magnetic = sensorManager
-					.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-			sensorManager.registerListener(this, magnetic,
-					SensorManager.SENSOR_DELAY_NORMAL);
-			this.enabled = true;
-		}
-
-		public void disable() {
-			SensorManager sensorManager = (SensorManager)
-					getSystemService(Context.SENSOR_SERVICE);
-			sensorManager.unregisterListener(this);
-			this.enabled = false;
+	
+	/**
+	 * Dummy sensor agent
+	 */
+	class SensorAgent {
+		private boolean hold = false;
+		
+		public int getRoll() {
+			return 0;
 		}
 		
 		public boolean enabled() {
-			return this.enabled;
+			return false;
 		}
-
-		public void onSensorChanged(SensorEvent event) {
-			SensorEvent aEvent = null, mEvent = null;
-			if (!this.enabled)
-				return;
-			if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-				aEvent = event;
-			} else if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
-				mEvent = event;
-			} else if (event.sensor.getType() == Sensor.TYPE_ORIENTATION) {
-				// this.azimuth = event.values[0];
-				// this.pitch = event.values[1];
-				// this.roll = event.values[2];
-				return;
-			} else {
-				return;
-			}
-
-			if (aEvent != null && mEvent != null) {
-				float R[] = new float[16];
-				float I[] = new float[16];
-				SensorManager.getRotationMatrix(R, I, aEvent.values,
-						mEvent.values);
-				float orientation[] = new float[3];
-				SensorManager.getOrientation(R, orientation);
-				// this.azimuth = orientation[0];
-				// this.pitch = orientation[1];
-				// this.roll = orientation[2];
-			}
-
-			// this.azimuth = event.values[0];
-			// this.pitch = event.values[1];
-			// this.roll = event.values[2];
-		}
-
-		public void onTouchEvent(MotionEvent event) {
-			if (event.getAction() == MotionEvent.ACTION_DOWN) {
-				// Hold bubbles
-				hold = true;
-			}
-			if (event.getAction() == MotionEvent.ACTION_UP) {
-				// Release bubbles
-				hold = false;
-			}
-		}
-
-		public void onAccuracyChanged(Sensor arg0, int arg1) {
+		
+		public void enable() {
 			
 		}
 		
-		public int getRoll() {
-			return roll;
+		public void disable() {
+			
 		}
 	}
 }
