@@ -105,7 +105,7 @@ public class BubbleWallpaper extends WallpaperService {
 							// collection[i] = new Bubble(c.getWidth(),
 							// c.getHeight());
 							/* Less elegant but more efficient solution */
-							collection[i].recycle(false);
+							collection[i].recycle(false, config.bubbleSize(), config.speed());
 						}
 					}
 
@@ -126,8 +126,7 @@ public class BubbleWallpaper extends WallpaperService {
 			int size = config.bubbleSize();
 			this.collection = new Bubble[config.bubbles()];
 			for (int i = 0; i < config.bubbles(); i++) {
-				this.collection[i] = new Bubble(this);
-				this.collection[i].setMaxSize(size);
+				this.collection[i] = new Bubble(this, config.bubbleSize(), config.speed());
 			}
 		}
 
@@ -141,7 +140,7 @@ public class BubbleWallpaper extends WallpaperService {
 		public void onVisibilityChanged(boolean visible) {
 			if (visible) {
 				config.show();
-				if (sense.enabled())
+				if (!sense.enabled())
 					sense.enable();
 				drawFrame(true);
 			} else {
@@ -189,6 +188,7 @@ public class BubbleWallpaper extends WallpaperService {
 
 		private int prefFPS;
 		private int prefBubbleSize;
+		private int prefSpeed;
 		private boolean prefColorShift;
 		private int prefBubbles;
 		private boolean visible = true;
@@ -208,19 +208,19 @@ public class BubbleWallpaper extends WallpaperService {
 		public void onSharedPreferenceChanged(SharedPreferences sharedPrefs,
 				String key) {
 
-			if (key == null || key.compareTo("fps") == 0) {
+			if(key == null || key.compareTo("fps") == 0) {
 				this.prefFPS = Integer.parseInt(sharedPrefs.getString("fps",
 						"25"));
 			}
 
-			if (key == null || key.compareTo("enable_sensor") == 0) {
+			if(key == null || key.compareTo("enable_sensor") == 0) {
 				if (sharedPrefs.getString("sensor", "Enable") == "Enable") {
 					sensorAgent.enable();
 				} else {
 					sensorAgent.disable();
 				}
 			}
-			if (key == null || key.compareTo("col_enter") == 0) {
+			if(key == null || key.compareTo("col_enter") == 0) {
 				String col = sharedPrefs.getString("col_enter", "#112255");
 
 				if (col.charAt(0) != '#')
@@ -238,13 +238,13 @@ public class BubbleWallpaper extends WallpaperService {
 				ed.commit();
 			}
 
-			if (key == null || key.compareTo("bubble_count") == 0) {
+			if(key == null || key.compareTo("bubble_count") == 0) {
 				int count = Integer.parseInt(sharedPrefs.getString(key, DEFAULT_BUBBLES));
 				if (count != 0) {
 					this.prefBubbles = count;
 				}
 			}
-			if (key == null || key.compareTo("bubble_size") == 0) {
+			if(key == null || key.compareTo("bubble_size") == 0) {
 				try {
 					this.prefBubbleSize = Integer.parseInt(sharedPrefs
 							.getString("bubble_size", "10"));
@@ -252,11 +252,19 @@ public class BubbleWallpaper extends WallpaperService {
 					this.prefBubbleSize = 10;
 				}
 			}
-			if (key == null || key.compareTo("col_shift") == 0) {
+			if(key == null || key.compareTo("col_shift") == 0) {
 				try {
 					this.prefColorShift = sharedPrefs.getBoolean("col_shift", false);
 				} catch (Exception e) {
 					this.prefColorShift = false;
+				}
+			}
+			if(key == null || key.compareTo("bubble_speed") == 0) {
+				try {
+					this.prefSpeed = Integer.parseInt(
+							sharedPrefs.getString("bubble_speed", "25"));
+				} catch (Exception e) {
+					this.prefSpeed = 25;
 				}
 			}
 		}
@@ -287,6 +295,10 @@ public class BubbleWallpaper extends WallpaperService {
 		
 		public boolean visible() {
 			return visible;
+		}
+		
+		public int speed() {
+			return this.prefSpeed;
 		}
 
 		private int redDir = 0;

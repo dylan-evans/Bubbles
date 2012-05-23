@@ -50,5 +50,19 @@
         <item>Enable</item>
         <item>Disable</item>
     </string-array>
+    
+    <string-array name="bubble_speed_names">
+        <item>Slow</item>
+        <item>Medium</item>
+        <item>Fast</item>
+        <item>Really Fast</item>
+    </string-array>
+    
+    <string-array name="bubble_speed">
+        <item>15</item>
+        <item>25</item>
+        <item>50</item>
+        <item>100</item>
+    </string-array>
 
 </resources>

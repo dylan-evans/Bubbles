@@ -9,6 +9,7 @@ public class Bubble {
 	private float x, y, radius, maxRadius;
 	private Paint paint;
 	private int maxSize = 10;
+	private int baseFPS = 25;
 	private BubbleWallpaper.BubbleEngine engine;
 	public boolean popped;
 	
@@ -22,7 +23,7 @@ public class Bubble {
 	 * Create a bubble
 	 * @param engine The Wallpaper engine
 	 */
-	Bubble(BubbleWallpaper.BubbleEngine engine) {
+	Bubble(BubbleWallpaper.BubbleEngine engine, int size, int speed) {
 		this.engine = engine;
 		this.popped = false;
 		
@@ -36,18 +37,20 @@ public class Bubble {
 		paint.setStyle(Paint.Style.FILL);
 		paint.setAntiAlias(true);
 		
-		recycle(true);
+		recycle(true, size, speed);
 	}
 	
 	public void refresh() {
-		this.recycle(false);
+		this.recycle(false, this.maxSize, this.baseFPS);
 	}
 	
 	/**
 	 * 
 	 * @param initial
 	 */
-	public void recycle(boolean initial) {
+	public void recycle(boolean initial, int size, int speed) {
+		this.baseFPS = speed;
+		this.maxSize = size;
 		if(initial) {
 			this.y = randRange(0, engine.getHeight());
 		} else {
@@ -69,13 +72,13 @@ public class Bubble {
 	 */
 	public void update(int fps, float angle) {
 		// On fps 25 the speed is the radius
-		float speed = this.radius / ((float)fps/25); // This is the speed at normal gravity
+		float speed = this.radius / ((float)fps/this.baseFPS); // This is the speed at normal gravity
 		//if(angle > 90) angle = 90;
 		//else if(angle < -90) angle = -90;
 		
 		if(!popped) {
 			if(this.radius < this.maxRadius) {
-				this.radius += this.maxRadius / (((float)fps / 25) * this.radius);
+				this.radius += this.maxRadius / (((float)fps / this.baseFPS) * this.radius);
 				//this.radius += (speed * ((float)this.height / 3));
 				//this.radius += 0.1;
 			}
@@ -118,16 +121,6 @@ public class Bubble {
 
 	public void setRadius(float radius) {
 		this.radius = radius;
-	}
-
-
-	public int getMaxSize() {
-		return maxSize;
-	}
-
-
-	public void setMaxSize(int maxBubbleSize) {
-		this.maxSize = maxBubbleSize;
 	}
 	
 }

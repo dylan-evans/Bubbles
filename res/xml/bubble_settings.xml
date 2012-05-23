@@ -62,4 +62,11 @@
 	    android:entryValues="@array/bubble_size"
 	    android:defaultValue="11"
 	    />
+	<ListPreference android:key="bubble_speed"
+	    android:title="Speed"
+	    android:summary="How fast should the bubbles go?"
+	    android:entries="@array/bubble_speed_names"
+	    android:entryValues="@array/bubble_speed"
+	    android:defaultValue="25"
+	    />
 </PreferenceScreen>
