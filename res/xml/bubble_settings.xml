@@ -18,6 +18,7 @@
 			android:summary="Set the colour code"
 	    	android:dialogTitle="Background Color" 
 	    	android:persistent="true"/>
+		
 	    <CheckBoxPreference android:key="col_shift"
 	    	android:title="Shift Colours"
 	    	android:summary="Shift colours randomly"

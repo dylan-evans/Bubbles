@@ -36,18 +36,18 @@ public class Bubble {
 		paint.setStyle(Paint.Style.FILL);
 		paint.setAntiAlias(true);
 		
-		refresh(true);
+		recycle(true);
 	}
 	
 	public void refresh() {
-		this.refresh(false);
+		this.recycle(false);
 	}
 	
 	/**
 	 * 
 	 * @param initial
 	 */
-	public void refresh(boolean initial) {
+	public void recycle(boolean initial) {
 		if(initial) {
 			this.y = randRange(0, engine.getHeight());
 		} else {
