@@ -12,19 +12,28 @@
     </string-array>
     
     <!-- Frame rate -->
-    <string-array name="fps_names">
-        <item>100</item>
+    <string-array name="fps">
+        <item>80</item>
         <item>50</item>
-        <item>25</item>
+        <item>40</item>
+        <item>30</item>
+        <item>20</item>
         <item>10</item>
-        <item>5</item>
+    </string-array>
+    
+    <string-array name="speeds">
+        <item>180</item>
+        <item>120</item>
+        <item>60</item>
+        <item>30</item>
+        <item>15</item>
     </string-array>
     
     <string-array name="bubble_count">
-        <item>64</item>
-        <item>128</item>
-        <item>256</item>
-        <item>512</item>
+        <item>50</item>
+        <item>100</item>
+        <item>200</item>
+        <item>400</item>
     </string-array>
     
     <string-array name="bubble_size_names">
@@ -37,9 +46,9 @@
     </string-array>
     
     <string-array name="bubble_size">
-        <item>2</item>
-        <item>6</item>
-        <item>11</item>
+        <item>5</item>
+        <item>10</item>
+        <item>16</item>
         <item>20</item>
         <item>30</item>
         <item>60</item>
@@ -52,10 +61,11 @@
     </string-array>
     
     <string-array name="bubble_speed_names">
-        <item>Slow</item>
-        <item>Medium</item>
-        <item>Fast</item>
         <item>Really Fast</item>
+        <item>Fast</item>
+        <item>Medium</item>
+        <item>Slow</item>
+        <item>Snail</item>
     </string-array>
     
     <string-array name="bubble_speed">

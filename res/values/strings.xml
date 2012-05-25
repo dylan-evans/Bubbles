@@ -6,5 +6,6 @@
     <string name="app_name">Bubbles</string>
     <string name="bubble_settings">Bubbles Settings</string>
     <string name="color">Colour</string>
+    <string name="desc">Bubbles Live Wallpaper</string>
     
 </resources>

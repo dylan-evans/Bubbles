@@ -1,5 +1,6 @@
 package me.dje.Bubbles;
 
+import android.graphics.BlurMaskFilter;
 import android.graphics.Paint;
 
 /**
@@ -8,9 +9,7 @@ import android.graphics.Paint;
 public class Bubble {
 	private float x, y, radius, maxRadius;
 	private Paint paint;
-	private int maxSize = 10;
-	private int baseFPS = 25;
-	private BubbleWallpaper.BubbleEngine engine;
+	private BubbleWallpaper.ConfigAgent config;
 	public boolean popped;
 	
 	public static int randRange(int min, int max) {
@@ -23,8 +22,7 @@ public class Bubble {
 	 * Create a bubble
 	 * @param engine The Wallpaper engine
 	 */
-	Bubble(BubbleWallpaper.BubbleEngine engine, int size, int speed) {
-		this.engine = engine;
+	Bubble(BubbleWallpaper.ConfigAgent config, int width, int height) {
 		this.popped = false;
 		
 		paint = new Paint();
@@ -36,30 +34,29 @@ public class Bubble {
 		*/
 		paint.setStyle(Paint.Style.FILL);
 		paint.setAntiAlias(true);
-		
-		recycle(true, size, speed);
-	}
-	
-	public void refresh() {
-		this.recycle(false, this.maxSize, this.baseFPS);
+		this.config = config;
+		recycle(true, width, height);
 	}
 	
 	/**
 	 * 
 	 * @param initial
 	 */
-	public void recycle(boolean initial, int size, int speed) {
-		this.baseFPS = speed;
-		this.maxSize = size;
+	public void recycle(boolean initial, int width, int height) {
+		if(config.blur()) {
+			this.paint.setMaskFilter(new BlurMaskFilter(this.radius/4 + 1, BlurMaskFilter.Blur.NORMAL));
+		} else {
+			this.paint.setMaskFilter(null);
+		}
 		if(initial) {
-			this.y = randRange(0, engine.getHeight());
+			this.y = randRange(0, height);
 		} else {
 			// Start at the bottom if not initial
-			this.y = engine.getHeight() + (randRange(0, 21) - 10 ); 
+			this.y = height + (randRange(0, 21) - 10 ); 
 		}
-		this.x = randRange(0, engine.getWidth());
+		this.x = randRange(0, width);
 		this.radius = 1;
-		this.maxRadius = randRange(3, this.maxSize);
+		this.maxRadius = randRange(3, config.bubbleSize());
 		this.paint.setAlpha(randRange(100, 250));
 		this.popped = false;
 	}
@@ -72,36 +69,30 @@ public class Bubble {
 	 */
 	public void update(int fps, float angle) {
 		// On fps 25 the speed is the radius
-		float speed = this.radius / ((float)fps/this.baseFPS); // This is the speed at normal gravity
-		//if(angle > 90) angle = 90;
-		//else if(angle < -90) angle = -90;
+		//float speed = (this.radius) / ((float)fps * (config.speed() / 30)); // This is the speed at normal gravity
+		double speed = (config.speed() / config.getCurrentFPS()) * Math.log(this.radius);
+		this.y -= speed;
+		this.x += (randRange(0,3) - 1);
 		
-		if(!popped) {
-			if(this.radius < this.maxRadius) {
-				this.radius += this.maxRadius / (((float)fps / this.baseFPS) * this.radius);
-				//this.radius += (speed * ((float)this.height / 3));
-				//this.radius += 0.1;
-			}
-			this.x += (randRange(0,3) - 1) + (speed * (angle/90));
-			//if(angle < 0) this.y -= speed * (1 + angle/90);
-			//else this.y -= speed - (speed * angle/90);
-			this.y -= (speed - (speed * ( (angle > 0 ? angle : -angle) / 90) ));
-			//this.y += speed * (speed / (angle/90));
-			if(this.y + this.radius <= 0 || 
-					this.y - this.radius >= engine.getHeight() || 
-					this.x + this.radius <= 0 || 
-					this.x - this.radius >= engine.getWidth()) {
-				this.popped = true;
-			}
+		if(this.radius < this.maxRadius) {
+			this.radius += this.maxRadius / (((float)fps / config.speed()) * this.radius);
+			if(this.radius > this.maxRadius) this.radius = this.maxRadius;
 		}
+		//this.x += (randRange(0,3) - 1) + (speed * (angle/90));
+		//this.y -= (speed - (speed * ( (angle > 0 ? angle : -angle) / 90) ));
+	}
+	
+	public boolean popped(int width, int height) {
+		if(this.y + this.radius <= -20 || 
+				this.y - this.radius >= height || 
+				this.x + this.radius <= 0 || 
+				this.x - this.radius >= width) {
+			return true;
+		}
+		return false;
 	}
 	
 	/* Boring accessors */
-	
-	public void setPosition(float x, float y) {
-		this.x = x;
-		this.y = y;
-	}
 	
 	public float getX() {
 		return x;
@@ -117,10 +108,6 @@ public class Bubble {
 	
 	public Paint getPaint() {
 		return paint;
-	}
-
-	public void setRadius(float radius) {
-		this.radius = radius;
 	}
 	
 }

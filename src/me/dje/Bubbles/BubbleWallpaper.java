@@ -2,17 +2,16 @@ package me.dje.Bubbles;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BlurMaskFilter;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Rect;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.service.wallpaper.WallpaperService;
-import android.view.MotionEvent;
+import android.util.Log;
+import android.util.TimingLogger;
 import android.view.SurfaceHolder;
 
 /**
@@ -25,7 +24,7 @@ public class BubbleWallpaper extends WallpaperService {
 	public static final String SHARED_PREFS_NAME = "bubble_settings";
 	private final String DEFAULT_BUBBLES = "128";
 	private final int DEFAULT_BLUE = 0xff112255;
-	//private final String TAG = "BubbleEngine";
+	private final String TAG = "BubbleWallpaper";
 
 	/**
 	 * Create a new instance of the BubbleEngine
@@ -41,9 +40,6 @@ public class BubbleWallpaper extends WallpaperService {
 		private final Runnable drawBubbles;
 		private Bubble collection[];
 		private Handler handler = new Handler();
-
-		private int width, height;
-
 		private SensorAgent sense;
 		private ConfigAgent config;
 
@@ -65,7 +61,6 @@ public class BubbleWallpaper extends WallpaperService {
 			};
 
 		}
-
 		/**
 		 * Update all Bubble objects and draw the canvas.
 		 * 
@@ -73,60 +68,74 @@ public class BubbleWallpaper extends WallpaperService {
 		 *            Update dimensions
 		 */
 		public void drawFrame(boolean refresh) {
+			long startMilli = SystemClock.uptimeMillis();
 			final SurfaceHolder holder = getSurfaceHolder();
-			Canvas c = null;
-
+			Canvas surfaceCanvas = null;
 			try {
-				c = holder.lockCanvas();
-				if (c != null) {
-					this.height = c.getHeight();
-					this.width = c.getWidth();
+				surfaceCanvas = holder.lockCanvas();
+				if (surfaceCanvas != null) {
+					int height = surfaceCanvas.getHeight();
+					int width = surfaceCanvas.getWidth();
 					
 					if (collection == null || collection.length != config.bubbles()) {
-						this.createBubbles();
+						this.createBubbles(width, height);
 					}
 					
 					/* Draw the background */
-					c.drawRect(new Rect(0, 0, this.width, this.height),
-							config.bgPaint());
+					//c.drawRect(new Rect(0, 0, this.width, this.height),
+					surfaceCanvas.drawPaint(config.bgPaint());
+					
 
 					/* Draw each Bubble */
 					for (int i = 0; i < collection.length; i++) {
 						/* Move the Bubble */
 						collection[i].update(config.fps(), sense.getRoll());
-
+					
 						/* Draw circle */
-						c.drawCircle((int) collection[i].getX(),
+						surfaceCanvas.drawCircle((int) collection[i].getX(),
 								(int) collection[i].getY(),
 								(int) collection[i].getRadius(),
 								collection[i].getPaint());
 
-						if (!sense.hold && collection[i].popped) {
+						if (!sense.hold && collection[i].popped(width, height)) {
 							// collection[i] = new Bubble(c.getWidth(),
 							// c.getHeight());
 							/* Less elegant but more efficient solution */
-							collection[i].recycle(false, config.bubbleSize(), config.speed());
+							collection[i].recycle(false, width, height);
 						}
 					}
+					//surfaceCanvas.drawBitmap(bm, 0, 0, config.bgPaint());
 
+				} else {
+					Log.d(TAG, "Skipping frame");
 				}
 			} finally {
 				// Unlock this in case of an error
-				if (c != null)
-					holder.unlockCanvasAndPost(c);
+				if (surfaceCanvas != null) {
+					try {
+						holder.unlockCanvasAndPost(surfaceCanvas);
+						config.frame();
+					} catch(IllegalArgumentException iae) {
+						// Ignore this error, appart from catching it not sure how to handle it
+						// I suspect this happens when the screen is rotated while the canvas is
+						// locked
+						Log.d(TAG, "Caught IllegalArgumentException doing unlockCanvasAndPost");
+					}
+				}
 			}
-
+			
 			handler.removeCallbacks(drawBubbles);
 			if (config.visible()) {
-				handler.postDelayed(drawBubbles, 1000 / config.fps());
+				long duration = SystemClock.uptimeMillis() - startMilli;
+				
+				handler.postDelayed(drawBubbles, (1000 / config.fps()) - duration);
 			}
 		}
 
-		public void createBubbles() {
-			int size = config.bubbleSize();
+		public void createBubbles(int width, int height) {
 			this.collection = new Bubble[config.bubbles()];
 			for (int i = 0; i < config.bubbles(); i++) {
-				this.collection[i] = new Bubble(this, config.bubbleSize(), config.speed());
+				this.collection[i] = new Bubble(config, width, height);
 			}
 		}
 
@@ -173,13 +182,6 @@ public class BubbleWallpaper extends WallpaperService {
 				float yStep, int xPixels, int yPixels) {
 		}
 
-		public int getHeight() {
-			return this.height;
-		}
-
-		public int getWidth() {
-			return this.width;
-		}
 	}
 
 	class ConfigAgent implements
@@ -189,16 +191,17 @@ public class BubbleWallpaper extends WallpaperService {
 		private int prefFPS;
 		private int prefBubbleSize;
 		private int prefSpeed;
+		private boolean pBlur;
 		private boolean prefColorShift;
 		private int prefBubbles;
 		private boolean visible = true;
-		private Paint prefPaint;
+		private Paint pBGPaint;
 		private SharedPreferences prefs;
 
 		public ConfigAgent(SensorAgent sensorAgent) {
-			this.prefPaint = new Paint(DEFAULT_BLUE);
+			this.pBGPaint = new Paint(DEFAULT_BLUE);
 			prefColorShift = true;
-			this.prefPaint.setStyle(Paint.Style.FILL);
+			this.pBGPaint.setStyle(Paint.Style.FILL);
 			this.sensorAgent = sensorAgent;
 			prefs = getSharedPreferences(SHARED_PREFS_NAME, 0);
 			prefs.registerOnSharedPreferenceChangeListener(this);
@@ -226,11 +229,11 @@ public class BubbleWallpaper extends WallpaperService {
 				if (col.charAt(0) != '#')
 					col = '#' + col;
 				try {
-					prefPaint.setColor(Color.parseColor(col));
+					pBGPaint.setColor(Color.parseColor(col));
 				} catch (Exception e) {
-					prefPaint.setColor(DEFAULT_BLUE);
+					pBGPaint.setColor(DEFAULT_BLUE);
 				}
-				prefPaint.setAlpha(0xFF);
+				pBGPaint.setAlpha(0xFF);
 			} else if (key.compareTo("col_select") == 0) {
 				SharedPreferences.Editor ed = sharedPrefs.edit();
 				ed.putString("col_enter",
@@ -259,14 +262,31 @@ public class BubbleWallpaper extends WallpaperService {
 					this.prefColorShift = false;
 				}
 			}
+			if(key == null || key.compareTo("fps") == 0) {
+				try {
+					this.prefFPS = Integer.parseInt(
+							sharedPrefs.getString("fps", "25"));
+					Log.d("BUBBLE", "FPS = " + this.prefFPS);
+				} catch (Exception e) {
+					this.prefFPS = 25;
+				}
+				this.avgFPS = 0;
+			}
 			if(key == null || key.compareTo("bubble_speed") == 0) {
 				try {
 					this.prefSpeed = Integer.parseInt(
 							sharedPrefs.getString("bubble_speed", "25"));
 				} catch (Exception e) {
-					this.prefSpeed = 25;
+					this.prefSpeed = 60;
 				}
 			}
+			if(key == null || key.compareTo("blur") == 0) {
+				this.pBlur = sharedPrefs.getBoolean("blur", false);
+			}
+		}
+		
+		public boolean blur() {
+			return this.pBlur;
 		}
 
 		public int bubbles() {
@@ -314,7 +334,7 @@ public class BubbleWallpaper extends WallpaperService {
 			if (this.prefColorShift && this.frame >= (this.prefFPS / 20)) {
 				this.frame = 0;
 				
-				int col = prefPaint.getColor();
+				int col = pBGPaint.getColor();
 				int red = Color.red(col);
 				int green = Color.green(col);
 				int blue = Color.blue(col);
@@ -360,13 +380,43 @@ public class BubbleWallpaper extends WallpaperService {
 				if ((blueDir > 0 && blue < 255) || (blueDir < 0 && blue > 0))
 					blue += blueDir;
 				blueCnt--;
-				prefPaint.setColor(Color.argb(Color.alpha(col), red, green, blue));
+				pBGPaint.setColor(Color.argb(Color.alpha(col), red, green, blue));
 			}
-			return prefPaint;
+			return pBGPaint;
 		}
+		
+		private long timingStart = 0, frameCount = 0;
+		private double avgFPS = 0;
+		
+		public void frame() {
+			if(timingStart == 0) {
+				// The first one is free
+				timingStart = SystemClock.uptimeMillis();
+				return;
+			}
+			frameCount++;
+			if(frameCount >= 20) {
+				long currentTime = SystemClock.uptimeMillis();
+				double elapsed = currentTime - timingStart;
+				avgFPS = 1000 / (elapsed / frameCount); 
+				timingStart = currentTime;
+				frameCount = 0;
+				Log.d(TAG, "FPS: " + avgFPS);
+				
+			}
+		}
+		
+		public double getCurrentFPS() {
+			if(avgFPS == 0) {
+				// Assume everything is ideal
+				return (double)prefFPS;
+			}
+			return avgFPS;
+		}
+		
 	}
 	
-	/**
+	/*
 	 * Dummy sensor agent
 	 */
 	class SensorAgent {
