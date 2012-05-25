@@ -92,10 +92,7 @@ public class BubbleWallpaper extends WallpaperService {
 						collection[i].update(config.fps(), sense.getRoll());
 					
 						/* Draw circle */
-						surfaceCanvas.drawCircle((int) collection[i].getX(),
-								(int) collection[i].getY(),
-								(int) collection[i].getRadius(),
-								collection[i].getPaint());
+						collection[i].draw(surfaceCanvas);
 
 						if (!sense.hold && collection[i].popped(width, height)) {
 							// collection[i] = new Bubble(c.getWidth(),

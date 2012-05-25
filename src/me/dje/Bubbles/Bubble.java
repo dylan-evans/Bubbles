@@ -1,6 +1,7 @@
 package me.dje.Bubbles;
 
 import android.graphics.BlurMaskFilter;
+import android.graphics.Canvas;
 import android.graphics.Paint;
 
 /**
@@ -92,22 +93,13 @@ public class Bubble {
 		return false;
 	}
 	
-	/* Boring accessors */
-	
-	public float getX() {
-		return x;
-	}
-	
-	public float getY() {
-		return y;
-	}
-	
-	public float getRadius() {
-		return radius;
-	}
-	
-	public Paint getPaint() {
-		return paint;
+	/**
+	 * Unified method for drawing the bubble.
+	 * 
+	 * @param canvas The canvas to draw on
+	 */
+	public void draw(Canvas canvas) {
+		canvas.drawCircle(x, y, radius, paint);
 	}
 	
 }
