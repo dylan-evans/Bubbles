@@ -13,6 +13,13 @@ public class Bubble {
 	private BubbleWallpaper.ConfigAgent config;
 	public boolean popped;
 	
+	/**
+	 * Simple function for getting a random range.
+	 *
+	 * @param min The minimum int.
+	 * @param max The maximum int.
+	 * @return The random value.
+	 */
 	public static int randRange(int min, int max) {
 		int mod = max - min;
 		double val = Math.ceil(Math.random() * 1000000) % mod;
@@ -20,7 +27,8 @@ public class Bubble {
 	}
 	
 	/**
-	 * Create a bubble
+	 * Create a bubble.
+	 * 
 	 * @param engine The Wallpaper engine
 	 */
 	Bubble(BubbleWallpaper.ConfigAgent config, int width, int height) {
@@ -40,12 +48,18 @@ public class Bubble {
 	}
 	
 	/**
+	 * Reinitialises the Bubble properties so that it appears to be a new 
+	 * bubble.
+	 * 
+	 * Although a bit of elegance is sacrificed this seemed to result in a
+	 * performance boost during initial testing.
 	 * 
 	 * @param initial
 	 */
 	public void recycle(boolean initial, int width, int height) {
 		if(config.blur()) {
-			this.paint.setMaskFilter(new BlurMaskFilter(this.radius/4 + 1, BlurMaskFilter.Blur.NORMAL));
+			this.paint.setMaskFilter(new BlurMaskFilter(this.radius/4 + 1, 
+					BlurMaskFilter.Blur.NORMAL));
 		} else {
 			this.paint.setMaskFilter(null);
 		}
@@ -69,8 +83,6 @@ public class Bubble {
 	 * @param angle The angle of the device
 	 */
 	public void update(int fps, float angle) {
-		// On fps 25 the speed is the radius
-		//float speed = (this.radius) / ((float)fps * (config.speed() / 30)); // This is the speed at normal gravity
 		double speed = (config.speed() / config.getCurrentFPS()) * Math.log(this.radius);
 		this.y -= speed;
 		this.x += (randRange(0,3) - 1);
@@ -83,6 +95,13 @@ public class Bubble {
 		//this.y -= (speed - (speed * ( (angle > 0 ? angle : -angle) / 90) ));
 	}
 	
+	/**
+	 * Test whether a bubble is no longer visible.
+	 * 
+	 * @param width Canvas width
+	 * @param height Canvas height
+	 * @return A boolean indicating that the Bubble has drifted off screen
+	 */
 	public boolean popped(int width, int height) {
 		if(this.y + this.radius <= -20 || 
 				this.y - this.radius >= height || 
