@@ -82,7 +82,6 @@ public class BubbleWallpaper extends WallpaperService {
 					}
 					
 					/* Draw the background */
-					//c.drawRect(new Rect(0, 0, this.width, this.height),
 					surfaceCanvas.drawPaint(config.bgPaint());
 					
 
@@ -95,9 +94,6 @@ public class BubbleWallpaper extends WallpaperService {
 						collection[i].draw(surfaceCanvas);
 
 						if (!sense.hold && collection[i].popped(width, height)) {
-							// collection[i] = new Bubble(c.getWidth(),
-							// c.getHeight());
-							/* Less elegant but more efficient solution */
 							collection[i].recycle(false, width, height);
 						}
 					}
@@ -129,6 +125,12 @@ public class BubbleWallpaper extends WallpaperService {
 			}
 		}
 
+		/**
+		 * Create initial bubble instances in collection.
+		 * 
+		 * @param width Canvas width
+		 * @param height Canvas height
+		 */
 		public void createBubbles(int width, int height) {
 			this.collection = new Bubble[config.bubbles()];
 			for (int i = 0; i < config.bubbles(); i++) {
@@ -326,6 +328,12 @@ public class BubbleWallpaper extends WallpaperService {
 		private int blueCnt = 0;
 		private int frame = 0;
 
+		/**
+		 * Get the paint used for the background. For color shifting this 
+		 * method also calculates the change.
+		 * 
+		 * @return current Paint for the background.
+		 */
 		public Paint bgPaint() {
 			this.frame++;
 			if (this.prefColorShift && this.frame >= (this.prefFPS / 20)) {
@@ -385,6 +393,9 @@ public class BubbleWallpaper extends WallpaperService {
 		private long timingStart = 0, frameCount = 0;
 		private double avgFPS = 0;
 		
+		/**
+		 * Log a successful frame.
+		 */
 		public void frame() {
 			if(timingStart == 0) {
 				// The first one is free
@@ -403,6 +414,11 @@ public class BubbleWallpaper extends WallpaperService {
 			}
 		}
 		
+		/**
+		 * Get the current frame rate.
+		 * 
+		 * @return The current average frame rate.
+		 */
 		public double getCurrentFPS() {
 			if(avgFPS == 0) {
 				// Assume everything is ideal
@@ -413,8 +429,9 @@ public class BubbleWallpaper extends WallpaperService {
 		
 	}
 	
-	/*
-	 * Dummy sensor agent
+	/**
+	 * Dummy sensor agent. This class was originally part of the program but 
+	 * needs to be redeveloped.
 	 */
 	class SensorAgent {
 		private boolean hold = false;
