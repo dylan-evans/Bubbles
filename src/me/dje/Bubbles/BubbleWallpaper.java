@@ -84,7 +84,6 @@ public class BubbleWallpaper extends WallpaperService {
 					/* Draw the background */
 					surfaceCanvas.drawPaint(config.bgPaint());
 					
-
 					/* Draw each Bubble */
 					for (int i = 0; i < collection.length; i++) {
 						/* Move the Bubble */
@@ -120,7 +119,6 @@ public class BubbleWallpaper extends WallpaperService {
 			handler.removeCallbacks(drawBubbles);
 			if (config.visible()) {
 				long duration = SystemClock.uptimeMillis() - startMilli;
-				
 				handler.postDelayed(drawBubbles, (1000 / config.fps()) - duration);
 			}
 		}
@@ -146,6 +144,7 @@ public class BubbleWallpaper extends WallpaperService {
 
 		@Override
 		public void onVisibilityChanged(boolean visible) {
+			
 			if (visible) {
 				config.show();
 				if (!sense.enabled())
@@ -420,7 +419,7 @@ public class BubbleWallpaper extends WallpaperService {
 		 * @return The current average frame rate.
 		 */
 		public double getCurrentFPS() {
-			if(avgFPS == 0) {
+			if(avgFPS < 10) {
 				// Assume everything is ideal
 				return (double)prefFPS;
 			}
