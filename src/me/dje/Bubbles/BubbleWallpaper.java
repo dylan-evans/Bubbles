@@ -402,7 +402,7 @@ public class BubbleWallpaper extends WallpaperService {
 				return;
 			}
 			frameCount++;
-			if(frameCount >= 20) {
+			if(frameCount >= 2) {
 				long currentTime = SystemClock.uptimeMillis();
 				double elapsed = currentTime - timingStart;
 				avgFPS = 1000 / (elapsed / frameCount); 
