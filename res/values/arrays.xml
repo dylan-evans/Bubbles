@@ -30,6 +30,7 @@
     </string-array>
     
     <string-array name="bubble_count">
+        <item>25</item>
         <item>50</item>
         <item>100</item>
         <item>200</item>
