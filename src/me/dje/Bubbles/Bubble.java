@@ -8,6 +8,8 @@ import android.graphics.Paint;
  * The bubble class tracks the size, location and colour of a single bubble.
  */
 public class Bubble {
+	private int step;
+	private double amp, freq, skew;
 	private float x, y, radius, maxRadius;
 	private Paint paint;
 	private BubbleWallpaper.ConfigAgent config;
@@ -74,6 +76,11 @@ public class Bubble {
 		this.maxRadius = randRange(3, config.bubbleSize());
 		this.paint.setAlpha(randRange(100, 250));
 		this.popped = false;
+		this.step = 0;
+		this.amp = Math.random() * 3;
+		this.freq = Math.random() * 2;
+		this.skew = Math.random() - 0.5;
+		//this.skew = 0;
 	}
 	
 	/**
@@ -85,7 +92,8 @@ public class Bubble {
 	public void update(int fps, float angle) {
 		double speed = (config.speed() / config.getCurrentFPS()) * Math.log(this.radius);
 		this.y -= speed;
-		this.x += (randRange(0,3) - 1);
+		//this.x += (randRange(0,3) - 1);
+		this.x += this.amp * Math.sin(this.freq * (this.step++ * speed)) + this.skew;
 		
 		if(this.radius < this.maxRadius) {
 			this.radius += this.maxRadius / (((float)fps / config.speed()) * this.radius);

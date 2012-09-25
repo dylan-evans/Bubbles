@@ -408,7 +408,7 @@ public class BubbleWallpaper extends WallpaperService {
 				avgFPS = 1000 / (elapsed / frameCount); 
 				timingStart = currentTime;
 				frameCount = 0;
-				Log.d(TAG, "FPS: " + avgFPS);
+				//Log.d(TAG, "FPS: " + avgFPS);
 				
 			}
 		}

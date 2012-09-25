@@ -41,6 +41,5 @@ public class BubbleWallpaperSettings extends PreferenceActivity
 			String key) {
 		getPreferenceManager().getSharedPreferences()
 			.unregisterOnSharedPreferenceChangeListener(this);
-		
 	}
 }
